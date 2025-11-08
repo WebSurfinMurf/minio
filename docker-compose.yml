@@ -3,6 +3,8 @@ version: '3.8'
 networks:
   traefik-net:
     external: true
+  minio-net:
+    external: true
 
 volumes:
   minio-data:
@@ -19,8 +21,8 @@ services:
     restart: unless-stopped
     command: server /data --console-address ":9090"
     networks:
-      traefik-net:
-        ipv4_address: 172.25.0.14
+      - traefik-net
+      - minio-net
     volumes:
       - minio-data:/data
     env_file:
