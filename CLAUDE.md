@@ -49,7 +49,7 @@ Bucket-specific Policies (plane-policy, backup-policy, etc.)
 
 #### Group Mappings
 - `administrators` → consoleAdmin (full admin access)
-- `developers` → developer-policy (read/write media & plane buckets)
+- `developers` → developer-policy (read/write media, plane, & aichat-files buckets)
 - `users` → user-readonly (read-only access to all buckets)
 
 #### Buckets
@@ -58,6 +58,7 @@ Bucket-specific Policies (plane-policy, backup-policy, etc.)
 - `backup-archives` - System backup storage
 - `media-library` - Shared media files
 - `mcp-storage` - AI/MCP generated content (screenshots, uploads, temp files)
+- `aichat-files` - Inter-agent file sharing (7-day auto-expiry lifecycle)
 
 ## Service Accounts
 
