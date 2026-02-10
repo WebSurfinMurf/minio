@@ -19,6 +19,7 @@ mc mb local/plane-uploads --ignore-existing
 mc mb local/openproject-files --ignore-existing
 mc mb local/backup-archives --ignore-existing
 mc mb local/media-library --ignore-existing
+mc mb local/aichat-files --ignore-existing
 "
 echo -e "${GREEN}✓ Buckets created${NC}"
 
@@ -102,6 +103,35 @@ docker cp /tmp/user-readonly-policy.json minio:/tmp/user-readonly-policy.json
 docker exec minio sh -c "mc admin policy create local user-readonly /tmp/user-readonly-policy.json"
 echo -e "${GREEN}✓ User read-only policy created${NC}"
 
+# Create aichat policy (full access to aichat-files bucket)
+echo -e "\n${YELLOW}Creating aichat file sharing policy...${NC}"
+cat > /tmp/aichat-policy.json << 'EOF'
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": [
+        "arn:aws:s3:::aichat-files",
+        "arn:aws:s3:::aichat-files/*"
+      ]
+    }
+  ]
+}
+EOF
+
+docker cp /tmp/aichat-policy.json minio:/tmp/aichat-policy.json
+docker exec minio sh -c "mc admin policy create local aichat-policy /tmp/aichat-policy.json"
+echo -e "${GREEN}✓ Aichat policy created${NC}"
+
+# Set aichat-files lifecycle (7-day auto-cleanup)
+echo -e "\n${YELLOW}Setting aichat-files lifecycle (7-day expiry)...${NC}"
+docker exec minio sh -c "mc ilm add local/aichat-files --expiry-days 7" 2>/dev/null || echo "(lifecycle rule may already exist)"
+echo -e "${GREEN}✓ Aichat lifecycle configured${NC}"
+
 # Create developer policy (read-write to specific buckets)
 echo -e "\n${YELLOW}Creating developer policy...${NC}"
 cat > /tmp/developer-policy.json << 'EOF'
@@ -117,7 +147,9 @@ cat > /tmp/developer-policy.json << 'EOF'
         "arn:aws:s3:::media-library",
         "arn:aws:s3:::media-library/*",
         "arn:aws:s3:::plane-uploads",
-        "arn:aws:s3:::plane-uploads/*"
+        "arn:aws:s3:::plane-uploads/*",
+        "arn:aws:s3:::aichat-files",
+        "arn:aws:s3:::aichat-files/*"
       ]
     },
     {
